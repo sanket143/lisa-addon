@@ -2,10 +2,12 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs')
 var Fuse = require('fuse.js')
+var path = require('path')
 
 var fuse;
+var arr = [];
 
-fs.readFile('data/mp3data.json', (err, item) => {
+fs.readFileSync('data/mp3data.json', (err, item) => {
   if (err) throw err
   json = JSON.parse(item.toString())
   options = {
@@ -26,10 +28,10 @@ fs.readFile('data/mp3data.json', (err, item) => {
     }],
   }
 
-  fuse = new Fuse(json, options)
+  arr = arr.concat(json)
 })
 
-fs.readFile('data/indexed_document.json', (err, item) => {
+fs.readFileSync('data/indexed_document.json', (err, item) => {
   if(err) throw err
   _json = JSON.parse(item.toString())
   options = {
@@ -39,20 +41,28 @@ fs.readFile('data/indexed_document.json', (err, item) => {
     includeScore: true,    
     keys: [{
       name: 'src',
-      weight: 0.4
+      weight: 0.8
     },
     {
       name: 'content',
-      weight: 0.4
+      weight: 0.2
     }],
   }
+
+  obj = {
+    "title": path.basename(_json["src"]),
+    "url": _json["src"],
+    "content": _json["content"].splice(0, 100) + "..."
+  }
+  arr = arr.concat(_json)
+  fuse = new Fuse(arr, options)
 })
 
 /* GET home page. */
 router.get('/search', function(req, res, next) {
   search_result = fuse.search(req.query.q)
   search_result = search_result.filter((a, b) => {
-
+    console.log(a.item["src"], a.score)
     return parseInt(a.score * 10) == 0
   })
   
