@@ -26,6 +26,15 @@ options = {
     weight: 0.2
   }],
 }
+
+for(i in json){
+  obj = {
+    "title": json[i]["artist"] + " - " + json[i]["title"],
+    "url": json[i]["src"],
+    "content": ""
+  }
+}
+
 arr = arr.concat(json)
 
 item = fs.readFileSync('data/indexed_document.json').toString('utf8')
@@ -35,12 +44,16 @@ options = {
   minMatchCharLength: 4,
   includeScore: true,    
   keys: [{
-    name: 'src',
-    weight: 0.8
+    name: 'title',
+    weight: 0.6
+  },
+  {
+    name: 'url',
+    weight: 0.1
   },
   {
     name: 'content',
-    weight: 0.2
+    weight: 0.4
   }],
 }
 
@@ -51,7 +64,7 @@ for(i in _json){
     "content": _json[i]["content"].slice(0, 100) + "..."
   }
   
-  arr = arr.concat(obj)
+  arr.push(obj)
 }
 
 fuse = new Fuse(arr, options)
@@ -62,11 +75,11 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/results', function(req, res) {
-  search_result = fuse.search(req.query.q)
+  search_result = fuse.search(req.query.q).slice(0, 5)
 
   search_result = search_result.filter((a, b) => {
-    console.log(a.item["url"])
     if(a.item["src"]){
+      console.log(a.item["src"], a.score)
       return parseInt(a.score * 10) == 0
     }
     if(a.item["url"]){
