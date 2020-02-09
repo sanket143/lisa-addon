@@ -1,0 +1,24 @@
+{
+
+  "manifest_version": 2,
+  "name": "Lis",
+  "version": "1.0",
+
+  "description": "Adds offline ",
+
+  "icons": {
+    "48": "icons/lis-icon.png"
+  },
+
+  "permissions": [
+    "webRequest",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.google.com/*", "*://*.google.co.in/*"],
+      "js": ["lis.js"]
+    }
+  ]
+
+}
